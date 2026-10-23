@@ -201,45 +201,55 @@ window.ART = (function () {
      身体大而圆润，头相对小，耳朵极长（约 1.3 倍头高），
      吻部向前凸出，前爪举到嘴边叼着草叶。 */
   function rabbit() {
-    /* 比例按原站实测：整体 local x 3..126、y -20..188。
-       身体用一条带肩部凹口的路径（而非椭圆），头才能与身体分离出颈部。 */
+    /* 坐姿（站立）姿态。轮廓逐点取自原站 5 倍实拍的像素，
+       按「身体宽 102、脚底为 y=0」映射到本盒子：
+       臀部在左下、身体近乎垂直向上、头在右上方、后脚向前平伸。
+       这是"站立"而不是"蜷着"的关键——背线接近竖直，肩不向右倾。 */
     return `
     <div class="r-facing">
       <div class="r-part pose-sit">
       <div class="r-part j-torso">
         <svg width="180" height="190" viewBox="0 0 180 190" overflow="visible">
-          <!-- 后脚并入躯干：跳跃时跟随身体转动，否则身体会在脚的位置断开 -->
-          <ellipse cx="54" cy="184" rx="19" ry="7" fill="${C.rabbit}"/>
-          <path d="M14 180 C 2 158 0 126 8 106 C 16 86 32 74 50 73
-                   C 62 72 70 82 76 96 C 84 114 94 134 97 154
-                   C 99 170 95 183 87 187 C 68 195 30 194 14 180 Z"
+          <!-- 尾巴：探出臀部左缘 -->
+          <circle cx="18" cy="156" r="8" fill="${C.rabbit}"/>
+          <!-- 身体：臀 → 背 → 肩 → 颈（伸进头内，避免接缝） -->
+          <path d="M26 190 C 21 178 20 162 22 146
+                   C 25 129 34 116 48 109
+                   C 60 104 72 102 84 104
+                   C 92 106 98 112 101 121
+                   C 104 132 101 144 97 156
+                   C 91 170 85 181 79 190
+                   C 73 198 40 197 30 194 Z"
                 fill="${C.rabbit}"/>
-          <circle cx="7" cy="124" r="9" fill="${C.rabbit}"/>
-          <ellipse cx="44" cy="170" rx="30" ry="16" fill="${C.rabbitSh}"/>
+          <!-- 后脚：向前平伸，右侧伸出身体轮廓 -->
+          <ellipse cx="64" cy="186" rx="21" ry="7.5" fill="${C.rabbit}"/>
+          <!-- 腹部柔和阴影，只贴最下缘 -->
+          <ellipse cx="48" cy="184" rx="17" ry="5.5" fill="${C.rabbitSh}"/>
 
           <g class="r-part j-head">
             <g class="r-part j-earRear">
-              <path d="M72 54 C 68 32 70 4 78 -16 C 84 -24 92 -18 92 -4 C 92 18 88 42 84 56 Z"
+              <path d="M92 80 C 89 62 91 40 97 22 C 102 10 108 14 108 26 C 108 46 104 68 100 82 Z"
                     fill="${C.rabbit}"/>
-              <path d="M76 50 C 73 32 75 10 81 -6 C 85 -12 88 -6 88 2 C 88 20 85 38 82 50 Z"
+              <path d="M96 76 C 94 60 96 42 100 28 C 104 20 105 26 105 34 C 105 50 102 68 100 78 Z"
                     fill="${C.rabbitIn}"/>
             </g>
             <g class="r-part j-earFront">
-              <path d="M88 54 C 86 30 90 2 98 -18 C 104 -26 112 -18 112 -4 C 112 20 106 44 100 56 Z"
+              <path d="M105 82 C 103 60 106 34 112 14 C 117 2 124 6 124 18 C 124 40 118 64 113 84 Z"
                     fill="${C.rabbit}"/>
-              <path d="M93 50 C 91 30 95 8 101 -6 C 105 -12 108 -4 108 4 C 108 22 104 40 100 50 Z"
+              <path d="M110 78 C 108 60 111 38 115 24 C 119 16 120 22 120 30 C 120 48 116 66 113 80 Z"
                     fill="${C.rabbitIn}"/>
             </g>
-            <circle cx="85" cy="77" r="27" fill="${C.rabbit}"/>
-            <ellipse cx="106" cy="94" rx="15" ry="11" fill="${C.rabbit}"/>
-            <circle cx="95" cy="78" r="4" fill="${C.rabbitEye}"/>
-            <ellipse cx="119" cy="96" rx="2.6" ry="2.1" fill="${C.rabbitNose}"/>
+            <circle cx="105" cy="99" r="21" fill="${C.rabbit}"/>
+            <ellipse cx="119" cy="111" rx="11" ry="8.5" fill="${C.rabbit}"/>
+            <circle cx="100" cy="96" r="3.4" fill="${C.rabbitEye}"/>
+            <ellipse cx="129" cy="113" rx="2.3" ry="1.9" fill="${C.rabbitNose}"/>
           </g>
 
+          <!-- 前爪：从胸前举到下巴，手掌圆润 -->
           <g class="r-part j-foreleg">
-            <ellipse cx="92" cy="132" rx="9" ry="24" fill="${C.rabbit}" transform="rotate(-36 92 132)"/>
-            <ellipse cx="104" cy="116" rx="12" ry="9" fill="${C.rabbit}"/>
-            <path d="M110 106 Q 122 100 130 107 Q 125 115 112 114 Z" fill="${C.leaf}"/>
+            <ellipse cx="116" cy="137" rx="8.5" ry="12" fill="${C.rabbit}" transform="rotate(28 116 137)"/>
+            <circle cx="124" cy="126" r="8.5" fill="${C.rabbit}"/>
+            <path d="M130 121 Q 137 118 139 123 Q 134 126 129 125 Z" fill="${C.leaf}"/>
           </g>
         </svg>
       </div>

@@ -1,18 +1,13 @@
 # ==============================================================================
-# Cloudflare Workers · 静态资源站点
+# Cloudflare Pages · grass-garden
 #
-# 这是零依赖静态站：源码在仓库根目录，dist/ 由构建步骤生成。
-# 构建成功后 Cloudflare 执行 `npx wrangler deploy`，
-# wrangler 读取下面的 [assets] 配置，把 dist/ 作为静态资源上传。
+# 部署方式：Git 集成。push 到 master 后 Cloudflare 自动构建并发布。
+# 本项目是零依赖静态站，源码就在仓库根目录，因此发布目录为根（"."）。
 #
-# 迁移说明：本项目原先是 Pages（pages_build_output_dir + `wrangler pages deploy`），
-# 现在 Cloudflare 上建的是 Workers 项目，两者配置不通用——
-# `wrangler deploy` 不认 pages_build_output_dir，必须改用 [assets]。
-#
-# name 必须与 Cloudflare 上的项目名完全一致（含连字符）。
+# 注意：不要写成 Workers 的 [assets] 配置 —— 本项目是 Pages 项目，
+# 两者配置不通用。本地手动发布时用：
+#   npx wrangler pages deploy dist --project-name grass-garden --branch master
 # ==============================================================================
 name = "grass-garden"
 compatibility_date = "2025-01-01"
-
-[assets]
-directory = "./dist"
+pages_build_output_dir = "."
