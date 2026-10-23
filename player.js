@@ -25,17 +25,27 @@ window.Player = (function () {
   const FAR_RABBIT = { t: [665, -65], s: [0.95, 0.95], face: -1 };
   const NEAR_RABBIT = { t: [0, 0], s: [1, 1], face: 1 };
 
-  /* 两套姿态的切换：原站 8.9% 起跳、50.6% 落地。
-     用「硬切」而不是淡入淡出——两套姿态同时半透明会看到四只耳朵的双影，
-     而把透明度压到 30ms 又会让兔子整体闪成半透明（都试过）。
-     硬切只有 1 帧，配合下面的重心补偿，观感是"伸展开"而不是"跳一下"。
-     AIR_OFFSET 把腾空姿态的重心平移到与坐姿一致（坐姿重心 48,134 / 腾空 68,100）。 */
-  const AIR_IN = 10.0, AIR_OUT = 44.9;
-  const AIR_OFFSET = [-20, 12];
-  function isAirborne(p) { return p >= AIR_IN && p < AIR_OUT; }
+  /* 兔子的骨骼：原站六个可旋转节点，层层嵌套（后腿 / 躯干 / 前腿 / 头 / 双耳）。
+     枢轴 = 原站节点「旋转盒」中心在**静止姿态下**的世界位置，已换算到兔子 180×190 局部坐标。
+     不能用父级坐标系里的原值：我们这套图形是把静止姿态整体烘焙进 path 的，
+     每层 <g> 的坐标系就是静止时的世界坐标，不是旋转前的父级坐标。 */
+  const JOINT_KEYS = ['hind', 'torso', 'foreleg', 'head', 'earRear', 'earFront'];
 
   /* 待机只启用头与耳朵的细微摆动；前爪轨道摆幅达 75°，会破坏叼草姿态，故不启用 */
   const IDLE_JOINTS = ['head', 'earRear', 'earFront'];
+
+  /* 我们画的耳朵在静止态比原站多向后压约 12°（原站 -0.209 / -0.157 rad，我们的图形约 -0.42 / -0.31）
+     站立姿态是已经确认的现状，不去动它；跳跃时补回这 0.209 rad，空中耳朵才与原站同角。 */
+  const EAR_BIAS = 0.209;
+
+  /* 绕 (cx,cy) 旋转 deg 度的 SVG 矩阵；transform-origin 已由 CSS 归零，
+     所以这里直接给出用户坐标系里的矩阵，平移量叠在旋转之后 */
+  function jointMatrix(deg, cx, cy, tx, ty) {
+    const r = deg * Math.PI / 180, c = Math.cos(r), s = Math.sin(r);
+    const e = cx - c * cx + s * cy + (tx || 0);
+    const f = cy - s * cx - c * cy + (ty || 0);
+    return `matrix(${c.toFixed(6)},${s.toFixed(6)},${(-s).toFixed(6)},${c.toFixed(6)},${e.toFixed(3)},${f.toFixed(3)})`;
+  }
 
   /* 在 [百分比, 值] 列表上采样；稠密轨用线性，稀疏轨用 ease-in-out */
   function sample(track, p) {
@@ -74,11 +84,17 @@ window.Player = (function () {
     const rabbit = sceneEl.querySelector('[data-layer="rabbit"]');
     const facing = sceneEl.querySelector('.r-facing');
     const poseSit = sceneEl.querySelector('.pose-sit');
-    const poseAir = sceneEl.querySelector('.pose-air');
     const joints = {};
-    ['torso', 'foreleg', 'head', 'earRear', 'earFront', 'paw'].forEach(k => {
+    [...JOINT_KEYS, 'paw'].forEach(k => {
       joints[k] = sceneEl.querySelector('.j-' + k);
     });
+
+    /* 摆一个关节：rad 是相对静止姿态的增量，t 是可选的平移补偿 */
+    function setJoint(el, rad, t) {
+      if (!el) return;
+      const p = (el.dataset.pivot || '0 0').split(/\s+/).map(Number);
+      el.style.transform = jointMatrix((rad || 0) * 180 / Math.PI, p[0] || 0, p[1] || 0, t ? t[0] : 0, t ? t[1] : 0);
+    }
 
     function applyLayer(el, t, s) {
       if (!el) return;
@@ -135,16 +151,14 @@ window.Player = (function () {
         rabbit.style.transform = `translate(${base.t[0]}px, ${base.t[1]}px) scale(${base.s[0]}, ${base.s[1]})`;
         facing.style.transform = `scaleX(${base.face})`;
         for (const key of IDLE_JOINTS) {
-          const el = joints[key];
           const track = j.joints && j.joints[key] && j.joints[key].r;
-          const d = delta(track, p);
-          if (el) el.style.transform = `rotate(${((d || 0) * 180 / Math.PI).toFixed(2)}deg)`;
+          setJoint(joints[key], delta(track, p) || 0);
         }
-        for (const key of ['foreleg', 'paw']) {
-          if (joints[key]) joints[key].style.transform = '';
+        /* 躯干、前爪与后腿在待机时回到静止姿态 */
+        for (const key of ['torso', 'foreleg', 'hind', 'paw']) {
+          setJoint(joints[key], 0);
         }
         if (poseSit) poseSit.style.opacity = '1';
-        if (poseAir) { poseAir.style.opacity = '0'; poseAir.style.transform = ''; }
         applyLeaves();
         return;
       }
@@ -194,26 +208,20 @@ window.Player = (function () {
       const faceSign = isBack ? FAR_RABBIT.face * localSign : localSign;
       facing.style.transform = `scaleX(${faceSign})`;
 
-      /* 姿态：坐姿与腾空姿态交叉淡入。
-         原站素材画成水平、静止靠 -55° 转出坐姿，所以它的躯干轨道是 65° 的补偿；
-         我们的坐姿素材旋转同样的角度只会变成"侧躺"，故改用两套姿态切换。
-         跳跃期间坐姿组不做关节旋转——否则淡出过程中会被拉变形。 */
-      for (const el of Object.values(joints)) {
-        if (el) el.style.transform = '';
+      /* 姿态：驱动原站的六关节骨骼。
+         静止姿态已经画进图形里（等于轨道末值），所以施加的是 θ(p) − θ(静止) 的增量：
+         起跳瞬间躯干从 −55° 展开到 0°、前爪后收 −112°、头反向补偿 −62°、
+         双耳向后贴 −28°/−23°，这正是原站空中那一帧的样子。 */
+      const jt = j.joints || {};
+      for (const key of JOINT_KEYS) {
+        const tr = jt[key];
+        let d = tr ? (delta(tr.r, p) || 0) : 0;
+        if (key === 'earRear' || key === 'earFront') d += EAR_BIAS;
+        const t = tr && tr.t ? delta(tr.t, p) : null;
+        setJoint(joints[key], d, t);
       }
-      /* 腾空姿态暂缺：原站的水平飞跃帧无法用静态场景树还原（场景树只有端点状态），
-         此处沿用坐姿，保证视觉统一，不再切换成另一套手绘姿态。 */
-      const airborne = false;
-      if (poseSit) poseSit.style.opacity = airborne ? '0' : '1';
-      if (poseAir) {
-        poseAir.style.opacity = airborne ? '1' : '0';
-        if (airborne) {
-          /* 起跳抬头、下落低头；再叠一个重心补偿位移 */
-          const k = Math.min(1, Math.max(0, (p - 15) / 30));
-          poseAir.style.transform =
-            `translate(${AIR_OFFSET[0]}px, ${AIR_OFFSET[1]}px) rotate(${(9 - 16 * k).toFixed(2)}deg)`;
-        }
-      }
+
+      if (poseSit) poseSit.style.opacity = '1';
 
       applyLeaves();
     }
@@ -223,7 +231,7 @@ window.Player = (function () {
       /* 从当前姿态平滑过渡到目标时间点 */
       settle(clipName, ms, farState) {
         return new Promise(res => {
-          const els = [rabbit, facing, poseSit, poseAir, ...Object.values(layers), ...Object.values(joints)].filter(Boolean);
+          const els = [rabbit, facing, poseSit, ...Object.values(layers), ...Object.values(joints)].filter(Boolean);
           const from = els.map(el => ({ el, tf: getComputedStyle(el).transform }));
           pose(clipName, ms, farState);
           const anims = from.map(f => f.el.animate(

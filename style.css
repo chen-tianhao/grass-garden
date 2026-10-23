@@ -73,16 +73,11 @@ body{
 }
 .rabbit .r-part > svg{display:block;overflow:visible}
 
-/* 两套姿态：坐姿常驻，腾空姿态在起跳后淡入 */
-.rabbit .pose-sit,.rabbit .pose-air{position:absolute;left:0;top:0;width:180px;height:190px}
-.rabbit .pose-air{opacity:0;transform-origin:64px 100px}
+/* 姿势层：坐姿常驻；腾空姿态由关节骨骼直接驱动，不再需要第二套图形 */
+.rabbit .pose-sit{position:absolute;left:0;top:0;width:180px;height:190px}
 
-/* 关节枢轴（与原站命名的 pivot 对应） */
-.j-torso  {transform-origin:48px 176px}
-.j-foreleg{transform-origin:106px 152px}
-.j-head   {transform-origin:96px 106px}
-.j-earRear{transform-origin:96px 78px}
-.j-earFront{transform-origin:110px 80px}
+/* 关节组：旋转以 SVG 用户坐标给出，原点必须归零，否则会绕视框中心转 */
+.rabbit .r-part svg g[class^="j-"]{transform-box:view-box;transform-origin:0 0}
 
 /* —— 滚动提示 —— */
 #scroll-cue{

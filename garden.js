@@ -211,6 +211,14 @@
     requestAnimationFrame(react);
   }
 
+  /* ---------------- 调试入口 ----------------
+     给 dev/air.js 定格任意播放头用；同时停掉待机循环，否则会被 idle 覆盖 */
+  window.__garden = {
+    player,
+    pose,
+    forceClip(name, far) { idleEnabled = false; activeClip = name; farState = !!far; }
+  };
+
   /* ---------------- 启动 ---------------- */
   requestAnimationFrame(() => {
     activeClip = 'idle';
