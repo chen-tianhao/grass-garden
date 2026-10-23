@@ -1,0 +1,107 @@
+/* grassgarden · 样式
+   —— 舞台 1440×900，等比覆盖视口；排版沿用 Lora。 */
+
+:root{
+  color-scheme: light;
+  --paper:#f5f3e8;
+  --ink:#293c32;
+  --moss:#364d34;
+  --sage:#789b73;
+  --cream:#f4f3e5;
+  --serif: Lora, Georgia, "Times New Roman", serif;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--serif);
+  -webkit-font-smoothing:antialiased;
+}
+
+#viewport{position:relative;height:100svh;overflow:hidden;isolation:isolate;background:var(--paper);touch-action:none}
+
+/* 舞台：由 JS 做 cover-fit 缩放 */
+#scene{
+  position:absolute;left:0;top:0;width:1440px;height:900px;
+  transform-origin:0 0;will-change:transform;
+}
+
+/* 可动画层：盒子与原站节点一一对应，缩放中心 = 盒子中心 */
+.layer{
+  position:absolute;
+  transform-origin:50% 50%;
+  will-change:transform;
+  pointer-events:none;
+}
+.layer .art{display:block;width:100%;height:100%;overflow:visible}
+
+/* —— 灌木上的文字 —— */
+.info-label{
+  position:absolute;inset:0;
+  opacity:0;translate:0 14px;
+  transition:opacity .65s ease,translate .65s ease;
+  pointer-events:none;
+}
+.info-label.is-visible{opacity:1;translate:0 0}
+.info-label .label{
+  position:absolute;margin:0;font-weight:400;line-height:normal;
+  white-space:nowrap;color:var(--cream);
+  font-family:var(--serif);font-size:48px;letter-spacing:0;
+  transform-origin:0 0;
+}
+.info-label .about-intro{
+  position:absolute;margin:0;font-family:var(--serif);
+  font-size:26px;line-height:1.4;white-space:nowrap;color:var(--cream);
+}
+.info-label .projects-link{
+  color:inherit;text-decoration:none;pointer-events:none;
+}
+.info-label.is-visible .projects-link{pointer-events:auto}
+.info-label .projects-link{transition:opacity .25s ease}
+.info-label .projects-link:hover{text-decoration:underline;text-underline-offset:5px}
+.info-label .projects-link:focus-visible{outline:2px solid var(--cream);outline-offset:4px;border-radius:3px}
+
+/* —— 兔子 —— */
+.rabbit .r-facing{
+  position:absolute;inset:0;
+  transform-origin:50% 50%;
+}
+.rabbit .r-part{
+  position:absolute;left:0;top:0;width:180px;height:190px;
+}
+.rabbit .r-part > svg{display:block;overflow:visible}
+
+/* 两套姿态：坐姿常驻，腾空姿态在起跳后淡入 */
+.rabbit .pose-sit,.rabbit .pose-air{position:absolute;left:0;top:0;width:180px;height:190px}
+.rabbit .pose-air{opacity:0;transform-origin:64px 100px}
+
+/* 关节枢轴（与原站命名的 pivot 对应） */
+.j-torso  {transform-origin:52px 166px}
+.j-foreleg{transform-origin:82px 112px}
+.j-head   {transform-origin:72px 100px}
+.j-earRear{transform-origin:86px 54px}
+.j-earFront{transform-origin:106px 52px}
+
+/* —— 滚动提示 —— */
+#scroll-cue{
+  position:absolute;left:50%;bottom:max(26px,env(safe-area-inset-bottom));
+  transform:translateX(-50%);
+  border:0;padding:8px 10px;background:transparent;color:var(--moss);
+  font:italic 23px var(--serif);
+  text-decoration:underline;text-decoration-style:wavy;text-decoration-thickness:1px;text-underline-offset:8px;
+  cursor:pointer;white-space:nowrap;transition:opacity .2s;
+}
+#scroll-cue span{display:inline-block;margin-left:8px;animation:guide-down 1.8s ease-in-out infinite}
+@keyframes guide-down{50%{transform:translateY(5px)}}
+#scroll-cue:focus-visible{outline:2px solid var(--moss);outline-offset:5px;border-radius:4px}
+html:not([data-state="entrance"]) #scroll-cue{display:none}
+
+/* —— 加载失败提示 —— */
+#scene-status{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+
+@media (prefers-reduced-motion: reduce){
+  .info-label{transition:none}
+  #scroll-cue span{animation:none}
+}

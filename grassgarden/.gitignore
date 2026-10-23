@@ -1,0 +1,22 @@
+# ==============================================================================
+# grassgarden · grassrabbit.fyi 的结构复刻
+# 零构建静态站：根目录即源码，dist/ 为 Cloudflare Pages 发布目录
+# ==============================================================================
+
+# ---- 构建 / 部署产物 ----
+# dist/ 可随时重建，不入库：
+#   rm -rf dist && mkdir -p dist/projects
+#   cp index.html style.css art.js garden.js player.js motion-data.js favicon.svg dist/
+#   cp projects/index.html dist/projects/
+#   npx wrangler pages deploy dist --project-name grassgarden --branch main
+dist/
+.wrangler/
+
+# ---- 原站对比截图 ----
+# 由 dev 目录下的 grab-states.js / compare.js / crop-rabbit.js 重新生成
+compare/
+
+# ---- 日志与临时 ----
+*.log
+*.tmp
+*.bak

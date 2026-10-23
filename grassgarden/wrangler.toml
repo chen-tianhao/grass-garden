@@ -1,0 +1,4 @@
+# Cloudflare Pages 配置 —— grassgarden（grassrabbit.fyi 的结构复刻）
+name = "grassgarden"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = "dist"
