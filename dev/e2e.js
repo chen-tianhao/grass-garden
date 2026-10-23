@@ -1,0 +1,43 @@
+/* 端到端：滚动到各站点，抓状态与报错 */
+const { spawn } = require('child_process');
+const http = require('http');
+const fs = require('fs');
+const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
+const PORT = 9343;
+const URL_ = process.argv[2] || 'http://127.0.0.1:8790/';
+const OUT = process.argv[3] || 'C:/Users/fm051/AppData/Local/Temp/e2e';
+fs.mkdirSync(OUT, { recursive: true });
+const chrome = spawn(CHROME, ['--headless=new','--disable-gpu','--no-sandbox',`--remote-debugging-port=${PORT}`,'--window-size=1440,900','about:blank'], { stdio: 'ignore' });
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const getJSON = p => new Promise((res, rej) => { http.get({host:'127.0.0.1',port:PORT,path:p}, r=>{let d='';r.on('data',c=>d+=c);r.on('end',()=>{try{res(JSON.parse(d))}catch(e){rej(e)}})}).on('error',rej); });
+(async () => {
+  let t=null; for(let i=0;i<40;i++){try{t=await getJSON('/json/list');if(t.length)break}catch(e){}await sleep(250)}
+  const page=t.find(x=>x.type==='page');
+  const ws=new WebSocket(page.webSocketDebuggerUrl);
+  let id=0; const pending=new Map(); const errors=[];
+  await new Promise(r=>{ws.onopen=r});
+  ws.onmessage=e=>{const m=JSON.parse(e.data);
+    if(m.method==='Runtime.exceptionThrown') errors.push(m.params.exceptionDetails?.text||'exc');
+    if(m.method==='Runtime.consoleAPICalled'&&m.params.type==='error') errors.push(JSON.stringify(m.params.args?.map(a=>a.value)));
+    if(m.id&&pending.has(m.id)){pending.get(m.id)(m);pending.delete(m.id)}};
+  const send=(method,params)=>new Promise(res=>{const i=++id;pending.set(i,res);ws.send(JSON.stringify({id:i,method,params}))});
+  const ev=async expr=>{const r=await send('Runtime.evaluate',{expression:expr,returnByValue:true,awaitPromise:true});return r.result?.result?.value};
+  const shot=async name=>{const r=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(`${OUT}/${name}.png`,Buffer.from(r.result.data,'base64'));};
+  const wheel=d=>ev(`window.dispatchEvent(new WheelEvent('wheel',{deltaY:${d},bubbles:true,cancelable:true}));1`);
+  await send('Runtime.enable'); await send('Page.enable');
+  await send('Emulation.setDeviceMetricsOverride',{width:1440,height:900,deviceScaleFactor:1,mobile:false});
+  await send('Page.navigate',{url:URL_});
+  await sleep(2600);
+  const log=[]; const st=()=>ev(`document.documentElement.dataset.state`);
+  log.push('init='+await st()); await shot('01-entrance');
+  await wheel(180); await sleep(1200); log.push('about='+await st()); await shot('02-about');
+  await wheel(180); await sleep(1200); log.push('jumpStart='+await st());
+  await sleep(1800); await shot('03-jump-mid');
+  await sleep(2200); log.push('landing='+await st()); await shot('04-landing');
+  await wheel(180); await sleep(1200); log.push('work='+await st()); await shot('05-work');
+  await wheel(-180); await sleep(1200); log.push('backLanding='+await st());
+  await wheel(-180); await sleep(4200); log.push('returned='+await st()); await shot('06-return');
+  console.log(log.join(' | '));
+  console.log('errors:', errors.length ? errors.slice(0,3).join(' ; ') : 'none');
+  ws.close(); chrome.kill(); process.exit(0);
+})();

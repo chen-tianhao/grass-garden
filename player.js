@@ -201,7 +201,9 @@ window.Player = (function () {
       for (const el of Object.values(joints)) {
         if (el) el.style.transform = '';
       }
-      const airborne = isAirborne(p);
+      /* 腾空姿态暂缺：原站的水平飞跃帧无法用静态场景树还原（场景树只有端点状态），
+         此处沿用坐姿，保证视觉统一，不再切换成另一套手绘姿态。 */
+      const airborne = false;
       if (poseSit) poseSit.style.opacity = airborne ? '0' : '1';
       if (poseAir) {
         poseAir.style.opacity = airborne ? '1' : '0';

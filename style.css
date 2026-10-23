@@ -75,8 +75,6 @@ body{
 
 /* 两套姿态：坐姿常驻，腾空姿态在起跳后淡入 */
 .rabbit .pose-sit,.rabbit .pose-air{position:absolute;left:0;top:0;width:180px;height:190px}
-/* 坐姿整体放大 10%，以脚底为锚点，避免落地时离地 */
-.rabbit .pose-sit{transform:scale(1.05);transform-origin:58px 190px}
 .rabbit .pose-air{opacity:0;transform-origin:64px 100px}
 
 /* 关节枢轴（与原站命名的 pivot 对应） */
