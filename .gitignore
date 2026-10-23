@@ -1,20 +1,30 @@
 # ==============================================================================
-# grassgarden · grassrabbit.fyi 的结构复刻
-# 零构建静态站：根目录即源码，dist/ 为 Cloudflare Pages 发布目录
+# grass-garden · grassrabbit.fyi 的结构复刻
+# 零构建静态站：仓库根目录即发布内容（Cloudflare Pages 的发布目录设为 "."）
 # ==============================================================================
 
 # ---- 构建 / 部署产物 ----
-# dist/ 可随时重建，不入库：
+# dist/ 只是本地打包用的副本，可随时重建：
 #   rm -rf dist && mkdir -p dist/projects
 #   cp index.html style.css art.js garden.js player.js motion-data.js favicon.svg dist/
 #   cp projects/index.html dist/projects/
-#   npx wrangler pages deploy dist --project-name grassgarden --branch main
+#   npx wrangler pages deploy dist --project-name grass-garden --branch master
 dist/
 .wrangler/
 
-# ---- 原站对比截图 ----
-# 由 dev 目录下的 grab-states.js / compare.js / crop-rabbit.js 重新生成
+# ---- 截图产物 ----
+# 由 little-forest/dev 下的 grab-states.js / compare.js / crop-rabbit.js 重新生成
 compare/
+shots/
+
+# ---- 工作区同级目录（不属于本仓库）----
+# 同一工作区里的其他项目与资料，各自独立管理
+little-forest/
+my-schulte-grid/
+qingjizhang/
+New folder/
+count_csv_lines.py
+.workbuddy/
 
 # ---- 日志与临时 ----
 *.log
