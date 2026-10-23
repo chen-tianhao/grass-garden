@@ -1,4 +1,18 @@
-# Cloudflare Pages 配置 —— grassgarden（grassrabbit.fyi 的结构复刻）
-name = "grassgarden"
+# ==============================================================================
+# Cloudflare Workers · 静态资源站点
+#
+# 这是零依赖静态站：源码在仓库根目录，dist/ 由构建步骤生成。
+# 构建成功后 Cloudflare 执行 `npx wrangler deploy`，
+# wrangler 读取下面的 [assets] 配置，把 dist/ 作为静态资源上传。
+#
+# 迁移说明：本项目原先是 Pages（pages_build_output_dir + `wrangler pages deploy`），
+# 现在 Cloudflare 上建的是 Workers 项目，两者配置不通用——
+# `wrangler deploy` 不认 pages_build_output_dir，必须改用 [assets]。
+#
+# name 必须与 Cloudflare 上的项目名完全一致（含连字符）。
+# ==============================================================================
+name = "grass-garden"
 compatibility_date = "2025-01-01"
-pages_build_output_dir = "dist"
+
+[assets]
+directory = "./dist"
