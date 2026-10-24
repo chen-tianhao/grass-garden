@@ -6,7 +6,7 @@ const path = require('path');
 
 const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 const PORT = 9341;
-const [url, out, w, h] = process.argv.slice(2);
+const [url, out, w, h, wait] = process.argv.slice(2);
 const W = Number(w || 1440), H = Number(h || 900);
 fs.mkdirSync(path.dirname(out), { recursive: true });
 
@@ -42,7 +42,7 @@ function getJSON(p) {
   await send('Page.enable');
   await send('Emulation.setDeviceMetricsOverride', { width: W, height: H, deviceScaleFactor: 1, mobile: false });
   await send('Page.navigate', { url });
-  await sleep(3000);
+  await sleep(Number(wait || 3000));
   const r = await send('Page.captureScreenshot', { format: 'png' });
   fs.writeFileSync(out, Buffer.from(r.result.data, 'base64'));
   console.log('saved', out);

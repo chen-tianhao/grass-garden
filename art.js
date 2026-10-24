@@ -182,7 +182,8 @@ window.ART = (function () {
       [880,215],[900,220],[920,228],[940,238],[960,252],[980,275],[1000,341],[1020,353],[1040,369],[1060,395]
     ];
     return svgBox(1100, 620,
-      `<path d="${scallop(soften(top, 3).concat([[1072,470],[1072,556],[0,612]]), 3.0, 8)} Z" fill="${C.bush}"/>`) +
+      `<path d="${scallop(soften(top, 3).concat([[1072,470],[1072,556],[0,612]]), 3.0, 8)} Z" fill="${C.bush}"/>` +
+      bear() + dog()) +
       `<div class="info-label" data-section="about">
         <h1 class="label" style="left:330px;top:205px">About</h1>
         <p class="about-intro" style="left:330px;top:286px">Hello, I'm Grassrabbit</p>
@@ -194,6 +195,68 @@ window.ART = (function () {
     return `<svg class="art" width="150" height="10" viewBox="0 0 150 10">
       <ellipse cx="75" cy="5" rx="75" ry="5" fill="${C.shadow}" opacity="0.14"/>
     </svg>`;
+  }
+
+  /* ---------------- 6.5 · 狗与熊（陪衬角色，同一套扁平色板） ----------------
+     画法和兔子一致：无描边、一块暗部当体积、深色小圆点当眼睛。
+     色相整体往暖里挪一档——兔子奶油白、狗暖沙、熊灰褐——
+     三个角色在同一片绿底上都读得出来，又不跳出这套克制的配色。
+     两者都画在近景灌木层里，跳跃时随灌木一起离场，不会留在画面中间。 */
+  function dog() {
+    /* 坐着的狗，面朝左（正对兔子）。垂耳 + 项圈 + 上翘的尾巴，
+       这三样把它和"第二只兔子"区分开：兔子是长立耳、无项圈、短尾。 */
+    return `<g class="dog" transform="translate(716,516) scale(1.15)">
+      <!-- 尾巴 -->
+      <path class="dog-tail" d="M88 80 C104 78 114 64 110 52" fill="none"
+            stroke="#D8C8A8" stroke-width="13" stroke-linecap="round"/>
+      <!-- 后臀 -->
+      <ellipse cx="70" cy="88" rx="30" ry="24" fill="#D8C8A8"/>
+      <!-- 身体 -->
+      <path d="M34 108 C18 108 10 94 12 76 C15 54 32 42 54 42 C78 42 92 58 92 78 C92 96 78 108 60 108 Z" fill="#EADFC6"/>
+      <!-- 前腿 -->
+      <path d="M32 76 C32 92 35 102 42 108 H58 C50 100 47 88 47 76 Z" fill="#DFD1B2"/>
+      <!-- 垂耳：从头顶垂到下颌，画在头后面，只露外侧 -->
+      <path class="dog-ear" d="M58 20 C72 22 79 36 76 49 C74 57 63 57 59 48 C56 39 56 28 58 20 Z" fill="#C9B28C"/>
+      <path class="dog-ear" d="M30 20 C18 24 12 38 15 50 C17 57 26 56 29 47 C32 38 32 27 30 20 Z" fill="#D3BD9A"/>
+      <!-- 头（比兔子更宽扁） -->
+      <ellipse cx="44" cy="36" rx="21" ry="18" fill="#EADFC6"/>
+      <!-- 口鼻：短而平，带一点上翘 -->
+      <path d="M32 34 C22 34 14 38 14 43 C14 48 22 51 32 51 C38 51 41 47 41 43 C41 38 38 34 32 34 Z" fill="#F7F1E2"/>
+      <ellipse cx="17" cy="41" rx="4.2" ry="3.4" fill="#4A4038"/>
+      <!-- 项圈 -->
+      <path d="M27 52 C35 61 53 61 61 52 L61 57 C53 66 35 66 27 57 Z" fill="#7F9D78"/>
+      <circle cx="46" cy="63" r="3.4" fill="#E8C98F"/>
+      <!-- 眼睛 -->
+      <circle cx="38" cy="32" r="3" fill="#293C32"/>
+    </g>`;
+  }
+
+  function bear() {
+    /* 坐着的熊，面朝左。圆头、两只圆耳、大口鼻、后脚露在身前，
+       体量比狗和兔子都大一圈，作为远景里的"大个子"。 */
+    return `<g class="bear" transform="translate(436,450) scale(-1.22,1.22)">
+      <g class="bear-breathe">
+        <!-- 耳朵 -->
+        <circle cx="34" cy="14" r="13" fill="#D6C9B6"/><circle cx="34" cy="14" r="6.2" fill="#C0A992"/>
+        <circle cx="84" cy="12" r="13" fill="#D6C9B6"/><circle cx="84" cy="12" r="6.2" fill="#C0A992"/>
+        <!-- 身体 -->
+        <path d="M65 152 C36 152 18 130 18 102 C18 70 38 50 65 50 C92 50 112 70 112 102 C112 130 94 152 65 152 Z" fill="#D9CDBB"/>
+        <!-- 后脚 -->
+        <ellipse cx="40" cy="146" rx="19" ry="9" fill="#C7B9A3"/>
+        <ellipse cx="88" cy="146" rx="19" ry="9" fill="#C7B9A3"/>
+        <!-- 前爪 -->
+        <path d="M20 96 C10 100 8 112 16 118 C22 122 28 117 28 108 Z" fill="#C7B9A3"/>
+        <!-- 颈部暗部 -->
+        <ellipse cx="58" cy="70" rx="30" ry="14" fill="#CFC2AE"/>
+        <!-- 头 -->
+        <circle class="bear-head" cx="56" cy="50" r="34" fill="#D9CDBB"/>
+        <!-- 口鼻 -->
+        <ellipse cx="32" cy="60" rx="17" ry="13" fill="#EDE3D4"/>
+        <ellipse cx="21" cy="55" rx="5" ry="4.2" fill="#3E3630"/>
+        <!-- 眼睛 -->
+        <circle cx="47" cy="38" r="3.5" fill="#293C32"/>
+      </g>
+    </g>`;
   }
 
   /* ---------------- 7 · 兔子（180×190 @ 305,635） ----------------
