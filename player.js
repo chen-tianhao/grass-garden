@@ -129,6 +129,72 @@ window.Player = (function () {
       });
     }
 
+    /* ---------------- 狗与熊：不跟时间轴，用真实时钟养着 ----------------
+       狗是幼犬：坐着一直在摇尾，每 7.6 秒蹦两下（下蹲→腾空→落地挤压）；
+       熊是慢性子：呼吸 + 极慢的左右晃，每 11 秒才慢慢抬一次头。
+       兔子起跳（forward / back）时两只都会被带动：狗改成小碎步连蹦、耳朵后压，
+       熊则提前抬头目送。 */
+    const dogMove = sceneEl.querySelector('.dog-move');
+    const dogHead = sceneEl.querySelector('.dog-head');
+    const dogTail = sceneEl.querySelector('.dog-tail');
+    const bearMove = sceneEl.querySelector('.bear-move');
+    const bearHead = sceneEl.querySelector('.bear-head');
+    const stillMotion = matchMedia('(prefers-reduced-motion: reduce)');
+
+    function applyPets(now, excite) {
+      if (!dogMove && !bearMove) return;
+      if (stillMotion.matches) {
+        for (const el of [dogMove, dogHead, dogTail, bearMove, bearHead]) {
+          if (el) el.style.transform = '';
+        }
+        return;
+      }
+      const t = now / 1000;
+
+      if (dogMove) {
+        /* 兴奋时把整轮缩短到 2.4s，并连蹦三下 */
+        const period = excite ? 2.4 : 7.6;
+        const plan = excite ? [[0.10, 0.40], [0.78, 0.40], [1.46, 0.40]]
+                            : [[1.05, 0.44], [1.72, 0.40]];
+        const u = t % period;
+        let dy = 0, sx = 1, sy = 1;
+        for (const [start, dur] of plan) {
+          /* 起跳前下蹲 */
+          const kc = (u - (start - 0.15)) / 0.15;
+          if (kc > 0 && kc < 1) { const q = Math.sin(kc * Math.PI / 2); sy -= 0.06 * q; sx += 0.05 * q; }
+          /* 腾空 */
+          const k = (u - start) / dur;
+          if (k > 0 && k < 1) {
+            const h = Math.sin(Math.PI * k);
+            dy = -(excite ? 40 : 30) * h;
+            sy = 1 + 0.06 * h; sx = 1 - 0.04 * h;
+          }
+          /* 落地挤压回弹 */
+          const kl = (u - (start + dur)) / 0.18;
+          if (kl > 0 && kl < 1) { const q = Math.sin(Math.PI * kl); sy = 1 - 0.09 * q; sx = 1 + 0.07 * q; }
+        }
+        dogMove.style.transform = `translate(0px, ${dy.toFixed(2)}px) scale(${sx.toFixed(4)}, ${sy.toFixed(4)})`;
+
+        const wag = excite ? 13 : 8;
+        const speed = excite ? 8.5 : 3.2;
+        if (dogTail) dogTail.style.transform = `rotate(${(wag * Math.sin(t * speed)).toFixed(2)}deg)`;
+        if (dogHead) dogHead.style.transform = `rotate(${(-2 - 1.5 * Math.sin(t * 0.55) - (excite ? 7 : 0)).toFixed(2)}deg)`;
+      }
+
+      if (bearMove) {
+        const breathe = 1 + 0.012 * Math.sin(t * 0.75);
+        const sway = 1.2 * Math.sin(t * 0.31);
+        bearMove.style.transform = `rotate(${sway.toFixed(2)}deg) scale(1, ${breathe.toFixed(4)})`;
+        if (bearHead) {
+          const v = t % 11;
+          let look = 0;
+          if (v > 6.2 && v < 9.2) look = -7 * Math.sin((v - 6.2) / 3 * Math.PI);
+          if (excite) look -= 4;
+          bearHead.style.transform = `rotate(${(look - 1.5 * Math.sin(t * 0.5)).toFixed(2)}deg)`;
+        }
+      }
+    }
+
     function pose(clipName, ms, farState) {
       const j = M[clipName];
       if (!j) return;
@@ -160,6 +226,7 @@ window.Player = (function () {
         }
         if (poseSit) poseSit.style.opacity = '1';
         applyLeaves();
+        applyPets(performance.now(), false);
         return;
       }
 
@@ -224,6 +291,7 @@ window.Player = (function () {
       if (poseSit) poseSit.style.opacity = '1';
 
       applyLeaves();
+      applyPets(performance.now(), clipName === 'forward' || clipName === 'back');
     }
 
     return {

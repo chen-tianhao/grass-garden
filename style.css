@@ -96,13 +96,12 @@ html:not([data-state="entrance"]) #scroll-cue{display:none}
 /* 近景灌木层里的狗和熊会略超出 620 高的画布，放开裁切 */
 .layer[data-layer="depBush"] svg{overflow:visible}
 
-/* —— 狗与熊的待机微动（只动小部件，不参与时间轴） —— */
-@keyframes dog-tail{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(9deg)}}
-@keyframes dog-ear{0%,90%,100%{transform:rotate(0)}93%{transform:rotate(-8deg)}96%{transform:rotate(5deg)}}
-@keyframes bear-breathe{0%,100%{transform:scale(1,1)}50%{transform:scale(1.012,1.018)}}
-.dog-tail{transform-box:fill-box;transform-origin:6% 94%;animation:dog-tail 2.9s ease-in-out infinite}
-.dog-ear{transform-box:fill-box;transform-origin:50% 100%;animation:dog-ear 7.5s ease-in-out infinite}
-.bear-breathe{transform-box:fill-box;transform-origin:50% 100%;animation:bear-breathe 6.4s ease-in-out infinite}
+/* —— 狗与熊的动作分组：只定旋转/缩放原点，位移与角度由 player.js 每帧算 —— */
+.dog-move{transform-box:fill-box;transform-origin:50% 100%}
+.dog-head{transform-box:fill-box;transform-origin:32% 92%}
+.dog-tail{transform-box:fill-box;transform-origin:6% 94%}
+.bear-move{transform-box:fill-box;transform-origin:50% 100%}
+.bear-head{transform-box:fill-box;transform-origin:46% 86%}
 
 /* —— 加载失败提示 —— */
 #scene-status{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
@@ -110,5 +109,4 @@ html:not([data-state="entrance"]) #scroll-cue{display:none}
 @media (prefers-reduced-motion: reduce){
   .info-label{transition:none}
   #scroll-cue span{animation:none}
-  .dog-tail,.dog-ear,.bear-breathe{animation:none}
 }
